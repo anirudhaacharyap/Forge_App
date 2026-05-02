@@ -57,7 +57,6 @@ export const translations: TranslationDictionary = {
 
     "category.metal": "Metal",
     "category.wood": "Wood",
-    "category.concrete": "Concrete",
     "category.paint": "Paint",
     "category.glass": "Glass",
     "category.insulation": "Insulation",
@@ -127,7 +126,6 @@ export const translations: TranslationDictionary = {
 
     "category.metal": "धातु (Metal)",
     "category.wood": "लकड़ी (Wood)",
-    "category.concrete": "कंक्रीट (Concrete)",
     "category.paint": "पेंट (Paint)",
     "category.glass": "कांच (Glass)",
     "category.insulation": "इन्सुलेशन (Insulation)",
@@ -197,7 +195,6 @@ export const translations: TranslationDictionary = {
 
     "category.metal": "ಲೋಹ (Metal)",
     "category.wood": "ಮರ (Wood)",
-    "category.concrete": "ಕಾಂಕ್ರೀಟ್ (Concrete)",
     "category.paint": "ಬಣ್ಣ (Paint)",
     "category.glass": "ಗಾಜು (Glass)",
     "category.insulation": "ನಿರೋಧನ (Insulation)",
@@ -267,7 +264,6 @@ export const translations: TranslationDictionary = {
 
     "category.metal": "Métal",
     "category.wood": "Bois",
-    "category.concrete": "Béton",
     "category.paint": "Peinture",
     "category.glass": "Verre",
     "category.insulation": "Isolation",
@@ -337,7 +333,6 @@ export const translations: TranslationDictionary = {
 
     "category.metal": "Metal",
     "category.wood": "Madera",
-    "category.concrete": "Hormigón",
     "category.paint": "Pintura",
     "category.glass": "Vidrio",
     "category.insulation": "Aislamiento",
