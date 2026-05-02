@@ -1,0 +1,251 @@
+@import "tailwindcss";
+
+/* ========================================
+   FORGE DESIGN SYSTEM — Stitch Tokens
+   ======================================== */
+
+@theme inline {
+  /* — Colors — */
+  --color-forge-red: #A73300;
+  --color-forge-accent: #E8541A;
+  --color-forge-accent-hover: #D14916;
+
+  --color-surface-bg: #F0F0F0;
+  --color-surface-card: #FFFFFF;
+  --color-surface-track: #F2F2F2;
+  --color-surface-subtle: #F7F7F7;
+  --color-surface-warm: #FFF8F6;
+  --color-surface-container-low: #FFF1ED;
+  --color-surface-container-high: #FCE3DC;
+
+  --color-border-light: #EBEBEB;
+  --color-border-dark: #D1D1D1;
+
+  --color-text-primary: #1A1A1A;
+  --color-text-heading: #251915;
+  --color-text-secondary: #5F6368;
+  --color-text-muted: #666666;
+
+  --color-success: #0F9B58;
+  --color-success-bg: oklch(from #0F9B58 l c h / 0.1);
+  --color-warning: #F5A623;
+  --color-warning-bg: oklch(from #F5A623 l c h / 0.1);
+  --color-error: #BA1A1A;
+  --color-error-bg: #FFDAD6;
+
+  --color-primary: #7f2500;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #a73300;
+  --color-on-primary-container: #ffc8b7;
+  --color-secondary: #5f5e5e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #e4e2e1;
+  --color-inverse-surface: #3c2d29;
+  --color-on-surface: #251915;
+
+  /* — Font — */
+  --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* — Spacing — */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-gutter: 16px;
+  --spacing-margin: 24px;
+}
+
+/* — Dark Mode Overrides — */
+.dark {
+  --color-surface-bg: #121212;
+  --color-surface-card: #1E1E1E;
+  --color-surface-track: #2A2A2A;
+  --color-surface-subtle: #222222;
+  --color-surface-warm: #2C1E1A;
+  --color-surface-container-low: #36221D;
+  --color-surface-container-high: #422923;
+
+  --color-border-light: #333333;
+  --color-border-dark: #555555;
+
+  --color-text-primary: #F9F9F9;
+  --color-text-heading: #FFFFFF;
+  --color-text-secondary: #A0A0A0;
+  --color-text-muted: #888888;
+
+  --color-success-bg: oklch(from #0F9B58 l c h / 0.2);
+  --color-warning-bg: oklch(from #F5A623 l c h / 0.2);
+  --color-error-bg: oklch(from #BA1A1A l c h / 0.2);
+
+  --color-primary-container: #822700;
+  --color-on-primary-container: #ffdbd0;
+  --color-secondary-container: #4a4949;
+}
+
+/* — Base Styles — */
+body {
+  font-family: var(--font-inter);
+  background-color: var(--color-surface-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* — Custom Range Slider — */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  height: 44px;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: var(--color-surface-track);
+  border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 2px;
+  background: var(--color-forge-accent);
+  cursor: pointer;
+  margin-top: -8px;
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 4px;
+  background: var(--color-surface-track);
+  border-radius: 2px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 2px;
+  background: var(--color-forge-accent);
+  cursor: pointer;
+  border: none;
+}
+
+/* — Material Symbols — */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.material-symbols-outlined.fill {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* — Animations — */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes forge-letter-spacing {
+  0% { letter-spacing: 0.15em; opacity: 0; filter: blur(4px); }
+  100% { letter-spacing: -0.05em; opacity: 1; filter: blur(0); }
+}
+
+@keyframes slow-pulse-bg {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-track) 25%,
+    var(--color-surface-warm) 50%,
+    var(--color-surface-track) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite linear;
+}
+
+.animate-forge-logo {
+  animation: forge-letter-spacing 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-risk-pulse {
+  animation: slow-pulse-bg 3s ease-in-out infinite;
+}
+
+/* Base button transitions */
+.btn-primary {
+  @apply transition-all duration-200 active:scale-95 hover:scale-[1.02];
+}
+
+/* Badge Glows */
+.badge-glow-pass {
+  box-shadow: 0 0 12px oklch(from var(--color-success) l c h / 0.15);
+}
+
+.badge-glow-fail {
+  box-shadow: 0 0 12px oklch(from var(--color-error) l c h / 0.15);
+}
+
+/* — Scrollbar — */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-light);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
