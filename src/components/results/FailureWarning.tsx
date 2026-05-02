@@ -46,13 +46,13 @@ export default function FailureWarning({ failure }: { failure: Failure }) {
           {failure.failure_modes.map((mode, i) => (
             <div
               key={i}
-              className="bg-[var(--color-surface-card)]/ border border-[var(--color-border-light)] rounded-[4px] overflow-hidden"
+              className="bg-[var(--color-surface-card)] border border-[var(--color-border-light)] rounded-[4px] overflow-hidden"
             >
               <button
                 onClick={() =>
                   setExpandedIndex(expandedIndex === i ? null : i)
                 }
-                className="w-full flex items-center justify-between p-3 text-left hover:bg-[var(--color-surface-card)]/ transition-colors"
+                className="w-full flex items-center justify-between p-3 text-left hover:bg-[var(--color-surface-subtle)] transition-colors"
                 id={`failure-mode-${i}`}
               >
                 <div className="flex items-center gap-2">
