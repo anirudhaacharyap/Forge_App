@@ -84,13 +84,16 @@ Return format: ["first_choice", "second_choice", "third_choice"]
 EXPLANATION_PROMPT = """
 You are a senior construction materials expert explaining a recommendation to a {experience_level} user.
 
-Analyze the material: {material_name} for the use case: {use_case} in {environment} conditions.
+Analyze the material: {material_name} (Category: {category}) for the use case: {use_case} in {environment} conditions.
+
+KNOWN PROPERTIES (Use these as ground truth, do not contradict them):
+{known_properties}
 
 CRITICAL SAFETY INSTRUCTION: If this material is inherently unsuitable or dangerous for the specified use case (e.g., using wood for high-rise structural foundations or glass for armor), your explanation MUST start with a clear, bold warning about the physical impossibilities and high risk involved.
 
 Return ONLY a valid JSON object containing:
 1. A clear, practical explanation (2-3 sentences). If suitability is high, explain why. If there are major risks or conflicts, detail them immediately.
-2. Estimated physical properties for this material on a 1-10 scale.
+2. Estimated physical properties for this material on a 1-10 scale. For properties NOT in the 'KNOWN PROPERTIES' list, use your expertise to estimate them accurately for this specific material.
 
 Return format:
 {{
@@ -260,14 +263,18 @@ class GeminiService:
         material_name: str,
         use_case: str,
         environment: str,
+        category: str = "Unknown",
+        known_properties: dict = None,
         experience_level: str = "professional",
     ) -> dict:
         """Generate a human-readable explanation and estimate properties for a material recommendation."""
         try:
             prompt = EXPLANATION_PROMPT.format(
                 material_name=material_name,
+                category=category,
                 use_case=use_case,
                 environment=environment,
+                known_properties=json.dumps(known_properties or {}, indent=2),
                 experience_level=experience_level,
             )
             response = await self.client.aio.models.generate_content(

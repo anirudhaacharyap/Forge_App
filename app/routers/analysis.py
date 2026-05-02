@@ -226,8 +226,15 @@ async def full_analysis(
     use_case = intent.get("use_case", "general construction")
 
     # --- Step 4: Generate explanation and estimate missing properties ---
+    db_props = primary.get("properties", {})
+    known_props = {k: v for k, v in db_props.items() if v is not None}
+    
     explanation_data = await gemini_service.generate_explanation(
-        material_name=primary["name"], use_case=use_case, environment=environment
+        material_name=primary["name"],
+        category=primary.get("category", "Unknown"),
+        use_case=use_case,
+        environment=environment,
+        known_properties=known_props
     )
     explanation = explanation_data.get("explanation", f"{primary['name']} is a suitable choice.")
     estimated_props = explanation_data.get("properties", {})
