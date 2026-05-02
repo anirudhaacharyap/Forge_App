@@ -12,6 +12,7 @@ export const translations: TranslationDictionary = {
     "header.materials": "Materials",
     "header.identify": "Identify",
     "header.vendors": "Vendors",
+    "header.history": "History",
     
     "hero.title": "FORGE",
     "hero.tagline": "Precision engineering intelligence for high-stakes industrial operations.",
@@ -81,6 +82,7 @@ export const translations: TranslationDictionary = {
     "header.materials": "सामग्री (Materials)",
     "header.identify": "पहचानें (Identify)",
     "header.vendors": "विक्रेता (Vendors)",
+    "header.history": "इतिहास (History)",
     
     "hero.title": "FORGE",
     "hero.tagline": "उच्च-जोखिम वाले औद्योगिक कार्यों के लिए सटीक इंजीनियरिंग इंटेलिजेंस।",
@@ -150,6 +152,7 @@ export const translations: TranslationDictionary = {
     "header.materials": "ವಸ್ತುಗಳು (Materials)",
     "header.identify": "ಗುರುತಿಸಿ (Identify)",
     "header.vendors": "ಮಾರಾಟಗಾರರು (Vendors)",
+    "header.history": "ಇತಿಹಾಸ (History)",
 
     "hero.title": "FORGE",
     "hero.tagline": "ಹೆಚ್ಚಿನ-ಅಪಾಯದ ಕೈಗಾರಿಕಾ ಕಾರ್ಯಾಚರಣೆಗಳಿಗಾಗಿ ನಿಖರವಾದ ಎಂಜಿನಿಯರಿಂಗ್ ಬುದ್ಧಿಮತ್ತೆ.",
@@ -219,6 +222,7 @@ export const translations: TranslationDictionary = {
     "header.materials": "Matériaux",
     "header.identify": "Identifier",
     "header.vendors": "Fournisseurs",
+    "header.history": "Historique",
 
     "hero.title": "FORGE",
     "hero.tagline": "Intelligence d'ingénierie de précision pour des opérations industrielles à enjeux élevés.",
@@ -288,6 +292,7 @@ export const translations: TranslationDictionary = {
     "header.materials": "Materiales",
     "header.identify": "Identificar",
     "header.vendors": "Proveedores",
+    "header.history": "Historial",
 
     "hero.title": "FORGE",
     "hero.tagline": "Inteligencia de ingeniería de precisión para operaciones industriales de alto riesgo.",

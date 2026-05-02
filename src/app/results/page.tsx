@@ -12,6 +12,7 @@ import VendorList from "@/components/results/VendorList";
 import PDFDownload from "@/components/results/PDFDownload";
 import AudioPlayback from "@/components/results/AudioPlayback";
 import { SkeletonResults } from "@/components/ui/Skeleton";
+import { login, saveProject } from "@/lib/api";
 import type { AnalysisResponse } from "@/lib/api";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -20,6 +21,8 @@ export default function ResultsPage() {
   const { t } = useLanguage();
   const [data, setData] = useState<AnalysisResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     try {
@@ -62,6 +65,21 @@ export default function ResultsPage() {
     show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
   };
 
+  const handleSaveProject = async () => {
+    if (!data) return;
+    setSaving(true);
+    try {
+      const token = await login();
+      await saveProject(token, data);
+      setSaved(true);
+    } catch (err) {
+      console.error("Failed to save project:", err);
+      alert("Failed to save project. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="pt-16 pb-32">
       {/* Top Action Bar */}
@@ -75,6 +93,20 @@ export default function ResultsPage() {
           {t("results.newSearch")}
         </Link>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleSaveProject}
+            disabled={saving || saved}
+            className={`flex items-center gap-2 px-4 py-2 rounded-[4px] text-xs font-bold uppercase tracking-wider transition-colors border ${
+              saved 
+                ? "bg-[#0F9B58]/10 text-[#0F9B58] border-[#0F9B58]/20" 
+                : "bg-[var(--color-surface-card)] text-[var(--color-text-secondary)] border-[var(--color-border-light)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-dark)]"
+            }`}
+          >
+            <span className="material-symbols-outlined text-base">
+              {saved ? "check_circle" : saving ? "hourglass_empty" : "save"}
+            </span>
+            {saved ? "Saved" : saving ? "Saving..." : "Save Project"}
+          </button>
           <PDFDownload analysisData={data} />
           <AudioPlayback base64Audio={data.tts_audio_base64} />
         </div>
@@ -90,6 +122,28 @@ export default function ResultsPage() {
         >
           {/* Left Column — Primary Data (8/12) */}
           <div className="md:col-span-8 space-y-4">
+            {/* Conflict Warning */}
+            {data.conflict_warning?.detected && (
+              <motion.div variants={itemVariants} className="bg-[#F5A623]/10 border border-[#F5A623]/20 rounded-[4px] p-4">
+                <div className="flex items-center gap-2 text-[#F5A623] mb-2">
+                  <span className="material-symbols-outlined text-xl">warning</span>
+                  <span className="text-xs font-bold uppercase tracking-wider">
+                    Tradeoff Conflict Detected
+                  </span>
+                </div>
+                <div className="space-y-1 pl-7">
+                  {data.conflict_warning.conflicts.map((conflict, i) => (
+                    <p key={i} className="text-sm text-[#F5A623]/90">• {conflict}</p>
+                  ))}
+                  {data.conflict_warning.resolution && (
+                    <p className="text-sm font-medium text-[#F5A623] mt-2 border-t border-[#F5A623]/20 pt-2">
+                      Resolution: {data.conflict_warning.resolution}
+                    </p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
             {/* Material Recommendation */}
             <motion.div variants={itemVariants}>
               <MaterialRecommendation recommendation={data.recommendation} />

@@ -36,6 +36,7 @@ export default function Header() {
     { href: "/materials", labelKey: "header.materials" },
     { href: "/identify", labelKey: "header.identify" },
     { href: "/vendors", labelKey: "header.vendors" },
+    { href: "/history", labelKey: "header.history" },
   ];
 
   return (

@@ -55,7 +55,7 @@ export default function MaterialRecommendation({
                 key={key}
                 label={formatLabel(key, t)}
                 value={value as number}
-                maxValue={(value as number) > 10 ? 100 : 10}
+                maxValue={10}
               />
             );
           })}

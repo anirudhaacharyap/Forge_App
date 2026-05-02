@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://forgeapp-production-e708.up.railway.app";
 
 /* ── Types ── */
 
@@ -203,4 +203,46 @@ export async function generateReport(analysisData: AnalysisResponse): Promise<Bl
     throw new Error("Report generation failed");
   }
   return res.blob();
+}
+
+export async function login(): Promise<string> {
+  const res = await fetch(`${API_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: "admin@forge.com", password: "password123" }),
+  });
+  if (!res.ok) {
+    throw new Error("Login failed");
+  }
+  const data = await res.json();
+  return data.token;
+}
+
+export async function saveProject(token: string, analysisData: AnalysisResponse): Promise<any> {
+  const res = await fetch(`${API_URL}/api/projects/save`, {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(analysisData),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to save project");
+  }
+  return res.json();
+}
+
+export async function getProjects(token: string): Promise<any[]> {
+  const res = await fetch(`${API_URL}/api/projects/list`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch projects");
+  }
+  const data = await res.json();
+  return Array.isArray(data) ? data : (data.projects || []);
 }
