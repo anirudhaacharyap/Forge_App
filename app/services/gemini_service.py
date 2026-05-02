@@ -32,6 +32,12 @@ You are a senior construction materials expert with 30 years of field experience
 Extract structured intent from the user's description and return ONLY a valid JSON object.
 No explanation. No markdown. No preamble. Just the JSON.
 
+CRITICAL INSTRUCTION: If the user requests impossible physical properties (e.g., extremely high density but extremely low weight) or conflicting parameters (e.g., wood for a submarine hull, or glass for a heavy structural load-bearing pillar in a high-earthquake zone), you MUST:
+1. Set "has_conflicts" to true in the "conflict_check" object.
+2. List the specific conflicts in "conflicts".
+3. Set "suggested_risk_level" to "HIGH" in the "conflict_check" object.
+4. Provide a list of "severe_failure_modes" in the "conflict_check" object (e.g., "Structural collapse", "Catastrophic oxidation", "Brittle fracture").
+
 Required output format:
 {{
   "material_category": "metal | wood | paint | concrete | glass | insulation | ceramic | composite | other",
@@ -51,7 +57,9 @@ Required output format:
   }},
   "conflict_check": {{
     "has_conflicts": true | false,
-    "conflicts": ["describe each conflicting pair if any"]
+    "conflicts": ["describe each conflicting pair if any"],
+    "suggested_risk_level": "LOW | MEDIUM | HIGH",
+    "severe_failure_modes": ["list severe failures if conflicts exist"]
   }}
 }}
 
@@ -74,17 +82,19 @@ Return format: ["first_choice", "second_choice", "third_choice"]
 """
 
 EXPLANATION_PROMPT = """
-You are a construction materials expert explaining a recommendation to a {experience_level} user.
+You are a senior construction materials expert explaining a recommendation to a {experience_level} user.
 
 Analyze the material: {material_name} for the use case: {use_case} in {environment} conditions.
 
+CRITICAL SAFETY INSTRUCTION: If this material is inherently unsuitable or dangerous for the specified use case (e.g., using wood for high-rise structural foundations or glass for armor), your explanation MUST start with a clear, bold warning about the physical impossibilities and high risk involved.
+
 Return ONLY a valid JSON object containing:
-1. A clear, practical explanation (2-3 sentences) for why it is the best choice. Mention a key property. Do not use excessive jargon.
+1. A clear, practical explanation (2-3 sentences). If suitability is high, explain why. If there are major risks or conflicts, detail them immediately.
 2. Estimated physical properties for this material on a 1-10 scale.
 
 Return format:
 {{
-  "explanation": "your explanation here",
+  "explanation": "your explanation (including warnings if necessary)",
   "properties": {{
     "tensile_strength": 1-10,
     "ductility": 1-10,

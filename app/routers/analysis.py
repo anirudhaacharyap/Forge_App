@@ -23,6 +23,7 @@ from app.services.bulbul_service import bulbul_service
 from app.services.materials_service import materials_service
 from app.services.vendor_service import vendor_service
 from app.data.standards_map import get_standards
+from app.services.failure_service import failure_service
 from app.data.failure_map import get_failure_modes_dict
 from app.data.pricing_map import get_pricing_dict, format_price_display
 from app.core.exceptions import (
@@ -240,11 +241,14 @@ async def full_analysis(
     )
 
     # --- Step 6: Failure analysis ---
-    raw_failure = get_failure_modes_dict(primary["name"], environment)
+    conflict_data = intent.get("conflict_check", {})
+    raw_failure = failure_service.analyze_failures(
+        primary["name"], environment, conflict_data
+    )
     failure_result = FailureResult(
         risk_level=raw_failure["risk_level"],
         failure_modes=[FailureMode(**m) for m in raw_failure["failure_modes"]],
-        overall_recommendation=raw_failure["overall_recommendation"],
+        overall_recommendation=raw_failure.get("overall_recommendation", ""),
     )
 
     # --- Step 7: Cost comparison ---
@@ -272,7 +276,6 @@ async def full_analysis(
         vendor_result = VendorResult(vendors=[], search_radius_km=10)
 
     # --- Step 9: Conflict warning ---
-    conflict_data = intent.get("conflict_check", {})
     conflict_warning = ConflictWarning(
         detected=conflict_data.get("has_conflicts", False),
         conflicts=conflict_data.get("conflicts", []),
