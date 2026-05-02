@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 
 export default function InteractiveBackground() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (shouldReduceMotion) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       // Calculate offset based on center of screen
@@ -21,7 +19,7 @@ export default function InteractiveBackground() {
 
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [shouldReduceMotion]);
+  }, []);
 
   return (
     <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none bg-[var(--color-surface-bg)]">

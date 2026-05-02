@@ -2,15 +2,8 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
-import { useReducedMotion } from "framer-motion";
-
 export default function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const shouldReduceMotion = useReducedMotion();
-
-  if (shouldReduceMotion) {
-    return <>{children}</>;
-  }
 
   return (
     <AnimatePresence mode="wait">
