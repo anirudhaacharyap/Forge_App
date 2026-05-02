@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import MaterialRecommendation from "@/components/results/MaterialRecommendation";
 import StandardsCompliance from "@/components/results/StandardsCompliance";
 import FailureWarning from "@/components/results/FailureWarning";
@@ -49,7 +49,7 @@ export default function ResultsPage() {
     return null;
   }
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -57,7 +57,7 @@ export default function ResultsPage() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
   };
