@@ -13,10 +13,12 @@ export default function Badge({
   children,
   variant = "info",
   dot = false,
+  className = "",
 }: {
   children: React.ReactNode;
   variant?: BadgeVariant;
   dot?: boolean;
+  className?: string;
 }) {
   const dotColors: Record<BadgeVariant, string> = {
     pass: "bg-[#0F9B58]",
@@ -29,7 +31,7 @@ export default function Badge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-1 border rounded-[4px] text-[10px] font-bold uppercase tracking-wider ${variantStyles[variant]}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-1 border rounded-[4px] text-[10px] font-bold uppercase tracking-wider ${variantStyles[variant]} ${className}`}
     >
       {dot && <span className={`w-1.5 h-1.5 rounded-full ${dotColors[variant]}`} />}
       {children}
