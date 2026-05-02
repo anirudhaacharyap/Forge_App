@@ -22,9 +22,14 @@ export default function LanguageSelector() {
         value={language}
         onChange={(e) => setLanguage(e.target.value as LanguageCode)}
         className="bg-transparent text-sm font-medium text-[var(--color-text-primary)] outline-none cursor-pointer appearance-none pr-4 relative z-10"
+        style={{ colorScheme: "light dark" }}
       >
         {languages.map((lang) => (
-          <option key={lang.code} value={lang.code}>
+          <option
+            key={lang.code}
+            value={lang.code}
+            className="bg-[var(--color-surface-card)] text-[var(--color-text-primary)]"
+          >
             {lang.label}
           </option>
         ))}
