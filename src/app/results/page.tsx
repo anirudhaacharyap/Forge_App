@@ -69,9 +69,24 @@ export default function ResultsPage() {
     if (!data) return;
     setSaving(true);
     try {
-      const token = await login();
-      await saveProject(token, data);
+      // Always save to localStorage (works offline, no auth needed)
+      const existing = JSON.parse(localStorage.getItem("forge_saved_projects") || "[]");
+      const project = {
+        id: Date.now().toString(),
+        created_at: new Date().toISOString(),
+        data,
+      };
+      existing.unshift(project); // newest first
+      localStorage.setItem("forge_saved_projects", JSON.stringify(existing));
       setSaved(true);
+
+      // Best-effort: also try to sync to backend (non-blocking)
+      try {
+        const token = await login();
+        await saveProject(token, data);
+      } catch {
+        // Backend sync failed — that's fine, localStorage has it
+      }
     } catch (err) {
       console.error("Failed to save project:", err);
       alert("Failed to save project. Please try again.");
