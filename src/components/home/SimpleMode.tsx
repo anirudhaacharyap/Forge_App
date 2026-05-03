@@ -62,11 +62,38 @@ export default function SimpleMode({
     reader.readAsDataURL(file);
   };
 
+  // ── WAV encoding helper ──
+  const encodeWav = (samples: Float32Array, sampleRate: number): Blob => {
+    const buffer = new ArrayBuffer(44 + samples.length * 2);
+    const view = new DataView(buffer);
+    const writeString = (offset: number, str: string) => {
+      for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+    };
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + samples.length * 2, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true); // PCM
+    view.setUint16(22, 1, true); // mono
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, "data");
+    view.setUint32(40, samples.length * 2, true);
+    for (let i = 0; i < samples.length; i++) {
+      const s = Math.max(-1, Math.min(1, samples[i]));
+      view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+    return new Blob([buffer], { type: "audio/wav" });
+  };
+
   // ── Sarvam Server-Side Recording ──
   const startSarvamRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      const mediaRecorder = new MediaRecorder(stream);
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
@@ -76,40 +103,48 @@ export default function SimpleMode({
       };
 
       mediaRecorder.onstop = async () => {
-        // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
+        setIsTranscribing(true);
 
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
-        
-        // Convert to base64
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-          const base64 = (reader.result as string).split(",")[1];
-          if (!base64 || base64.length < 1000) {
-            // Audio too short
+        try {
+          // Decode the webm audio to raw PCM, then re-encode as real WAV
+          const webmBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+          const arrayBuffer = await webmBlob.arrayBuffer();
+          const audioCtx = new AudioContext();
+          const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+          const pcmData = audioBuffer.getChannelData(0); // mono
+          const wavBlob = encodeWav(pcmData, audioBuffer.sampleRate);
+          await audioCtx.close();
+
+          // Convert WAV blob to base64
+          const base64 = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
+            reader.readAsDataURL(wavBlob);
+          });
+
+          if (!base64 || base64.length < 500) {
             setIsTranscribing(false);
             return;
           }
 
-          setIsTranscribing(true);
-          try {
-            const result = await transcribeVoice({
-              audio_base64: base64,
-              language_code: language as "hi-IN" | "kn-IN" | "ta-IN" | "te-IN" | "ml-IN" | "en-IN",
-              audio_format: "wav",
-            });
+          const result = await transcribeVoice({
+            audio_base64: base64,
+            language_code: language as "hi-IN" | "kn-IN" | "ta-IN" | "te-IN" | "ml-IN" | "en-IN",
+            audio_format: "wav",
+          });
+
+          if (result.transcript) {
             const currentText = textRef.current;
             const initialText = currentText.trim() ? currentText.trim() + " " : "";
             setText(initialText + result.transcript);
-          } catch (err) {
-            console.error("Sarvam transcription failed:", err);
-          } finally {
-            setIsTranscribing(false);
           }
-        };
-        reader.readAsDataURL(audioBlob);
+        } catch (err) {
+          console.error("Sarvam transcription failed:", err);
+        } finally {
+          setIsTranscribing(false);
+        }
       };
-
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
       setIsRecording(true);
