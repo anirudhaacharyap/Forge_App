@@ -7,7 +7,7 @@ from app.services.gemini_service import GeminiService
 from app.services.sarvam_service import sarvam_service
 from app.services.translation_service import translation_service
 from app.data.failure_map import FAILURE_MAP
-from app.data.data_map import PRICE_MAP
+from app.data.pricing_map import PRICE_MAP
 import json
 import logging
 
