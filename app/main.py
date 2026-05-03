@@ -11,7 +11,7 @@ from app.db.mongo import connect_db, disconnect_db
 from app.core.error_handlers import register_exception_handlers
 from app.core.logging import setup_logging
 from app.core.limiter import limiter
-from app.routers import analysis, materials, vendors, report, health, auth, projects, voice
+from app.routers import analysis, materials, vendors, report, health, auth, projects, voice, chat
 
 
 @asynccontextmanager
