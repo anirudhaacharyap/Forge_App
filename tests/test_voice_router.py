@@ -56,7 +56,7 @@ async def test_transcribe_exception():
             "language_code": "hi-IN"
         })
         assert response.status_code == 502
-        assert "Sarvam STT error" in response.json()["detail"]
+        assert "Sarvam STT error" in response.json()["error"]
 
 def test_transcribe_invalid_language():
     # Test 4: POST /api/voice/transcribe rejects invalid language_code
