@@ -7,7 +7,7 @@ from app.services.gemini_service import GeminiService
 from app.services.sarvam_service import sarvam_service
 from app.services.translation_service import translation_service
 from app.data.failure_map import FAILURE_MAP
-from app.data.pricing_map import PRICE_MAP
+from app.data.pricing_map import PRICING_MAP
 import json
 import logging
 
@@ -24,7 +24,7 @@ async def multimodal_chat(body: MultimodalChatRequest):
     """
     try:
         # 1. Prepare context for Gemini grounding
-        pricing_context = json.dumps({k: v for k, v in PRICE_MAP.items()}, indent=2)
+        pricing_context = json.dumps({k: v for k, v in PRICING_MAP.items()}, indent=2)
         # Simplify failure map for context (only names and types)
         failure_context = json.dumps([{"material": k[0], "env": k[1], "failures": [f["type"] for f in v]} for k, v in FAILURE_MAP.items()][:20], indent=2)
 
