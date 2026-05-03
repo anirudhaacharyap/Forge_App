@@ -17,9 +17,15 @@ export default function SimpleMode({
   onPhotoSubmit?: (base64: string) => void;
 }) {
   const [text, setText] = useState("");
+  const textRef = useRef(text);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const { language, t } = useLanguage();
+
+  // Keep textRef in sync with text state
+  useEffect(() => {
+    textRef.current = text;
+  }, [text]);
 
   // Voice State
   const [isRecording, setIsRecording] = useState(false);
@@ -92,7 +98,8 @@ export default function SimpleMode({
               language_code: language as "hi-IN" | "kn-IN" | "ta-IN" | "te-IN" | "ml-IN" | "en-IN",
               audio_format: "wav",
             });
-            const initialText = text.trim() ? text.trim() + " " : "";
+            const currentText = textRef.current;
+            const initialText = currentText.trim() ? currentText.trim() + " " : "";
             setText(initialText + result.transcript);
           } catch (err) {
             console.error("Sarvam transcription failed:", err);
