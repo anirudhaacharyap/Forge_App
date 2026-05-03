@@ -132,7 +132,7 @@ class SarvamService:
                 "pace": 1.0,
                 "loudness": 1.5,
                 "enable_preprocessing": True,
-                "model": "bulbul:v1",
+                "model": "bulbul:v2",
             }
             headers = {"api-subscription-key": self.api_key}
 
