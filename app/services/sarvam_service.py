@@ -111,7 +111,7 @@ class SarvamService:
             raise SarvamSTTException(str(e))
 
     async def synthesize(
-        self, text: str, language_code: str = "en-IN", speaker: str = "ritu"
+        self, text: str, language_code: str = "en-IN", speaker: str = "anushka"
     ) -> str | None:
         """
         Convert text to speech using Sarvam Bulbul TTS.
