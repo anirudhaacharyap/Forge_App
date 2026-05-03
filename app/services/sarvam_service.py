@@ -58,7 +58,7 @@ class SarvamService:
             }
             data = {
                 "language_code": language_code,
-                "model": "saarika:v2",
+                "model": "saarika:v2.5",
                 "with_timestamps": "false",
             }
             headers = {"api-subscription-key": self.api_key}
