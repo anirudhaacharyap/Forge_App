@@ -38,7 +38,7 @@ export default function RootLayout({
           <InteractiveBackground />
           <LanguageProvider>
             <Header />
-            <main className="flex-grow">
+            <main className="flex-grow w-full">
               <PageTransition>{children}</PageTransition>
             </main>
           </LanguageProvider>
