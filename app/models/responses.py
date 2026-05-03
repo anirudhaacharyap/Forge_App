@@ -116,3 +116,11 @@ class TTSSynthesizeResponse(BaseModel):
     character_count: int
     success: bool
     message: str | None = None
+class ChatAnalysisResponse(BaseModel):
+    success: bool = True
+    chat_text: str
+    detected_materials: list[str]
+    suggested_actions: list[str]
+    risk_level: str
+    tts_audio_base64: str | None = None
+    structured_data: FullAnalysisResponse | None = None

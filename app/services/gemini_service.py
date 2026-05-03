@@ -141,6 +141,37 @@ def _parse_json_response(raw: str) -> dict | list:
     cleaned = raw.strip().replace("```json", "").replace("```", "").strip()
     return json.loads(cleaned)
 
+MULTIMODAL_CONSTRUCTION_PROMPT = """
+You are the Forge AI Construction Expert. You are analyzing an image and a user's query.
+
+GOAL:
+Provide expert construction advice based on the visual evidence in the image and the user's specific text.
+
+CONTEXT DATA (Ground Truth):
+Prices: {pricing_context}
+Risk Factors: {failure_context}
+
+USER QUERY:
+{user_text}
+
+RESPONSE MODE: {response_mode}
+LANGUAGE: {language}
+
+INSTRUCTIONS:
+1. If an image is provided, identify materials, damage, or spatial features.
+2. If the user mentions costs or quotes, compare them with the provided context prices and flag overcharging.
+3. If response_mode is "CHAT", return a conversational expert response.
+4. If response_mode is "BREAKDOWN", return the standard structured JSON format.
+
+OUTPUT FORMAT (JSON):
+{{
+  "chat_text": "Detailed expert response in {language}...",
+  "detected_materials": ["Material A", "Material B"],
+  "suggested_actions": ["Action 1", "Action 2"],
+  "risk_level": "LOW | MEDIUM | HIGH",
+  "structured_data": {{ ... standard FullAnalysisResponse shape if mode is BREAKDOWN ... }}
+}}
+"""
 
 def _detect_image_mime(image_bytes: bytes) -> str:
     """Detect image MIME type from magic bytes. Falls back to jpeg."""
@@ -233,6 +264,48 @@ class GeminiService:
         except Exception as e:
             logger.error(f"Gemini photo identification failed: {e}")
             raise GeminiException(str(e))
+
+    async def multimodal_construction_reasoning(
+        self,
+        text: str,
+        image_base64: str | None = None,
+        response_mode: str = "CHAT",
+        language: str = "English",
+        pricing_context: str = "",
+        failure_context: str = "",
+    ) -> dict:
+        """
+        Perform complex multimodal reasoning using an optional image and user text.
+        
+        This method is the heart of the multimodal chat, enabling visual QA,
+        cost auditing, and situational analysis for construction projects.
+        """
+        try:
+            prompt = MULTIMODAL_CONSTRUCTION_PROMPT.format(
+                user_text=text,
+                response_mode=response_mode,
+                language=language,
+                pricing_context=pricing_context,
+                failure_context=failure_context,
+            )
+
+            contents = [prompt]
+            if image_base64:
+                image_bytes = base64.b64decode(image_base64)
+                mime_type = _detect_image_mime(image_bytes)
+                contents.append(
+                    types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
+                )
+
+            response = await self.client.aio.models.generate_content(
+                model=self.MODEL,
+                contents=contents,
+                config=self.CONFIG
+            )
+            return _parse_json_response(response.text)
+        except Exception as e:
+            logger.error(f"Multimodal reasoning failed: {str(e)}")
+            raise GeminiException(f"Multimodal analysis error: {str(e)}")
 
     # ---- Ranking ----
 

@@ -61,6 +61,7 @@ def create_app() -> FastAPI:
     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
     app.include_router(projects.router, prefix="/api/projects", tags=["projects"])
     app.include_router(voice.router, prefix="/api", tags=["voice"])
+    app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 
     return app
 

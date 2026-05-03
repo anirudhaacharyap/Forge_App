@@ -124,6 +124,17 @@ class VoiceTranscribeRequest(BaseModel):
             raise ValueError(f"Invalid base64 audio: {str(e)}")
 
 
+class ResponseMode(str, Enum):
+    BREAKDOWN = "BREAKDOWN"
+    CHAT = "CHAT"
+
+
+class MultimodalChatRequest(BaseModel):
+    image_base64: str | None = None
+    text: str
+    response_mode: ResponseMode = ResponseMode.CHAT
+
+
 class TTSSynthesizeRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=500)
     language_code: str = Field("en-IN", pattern="^(en-IN|hi-IN|kn-IN)$")
