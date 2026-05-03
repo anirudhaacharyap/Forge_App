@@ -27,7 +27,7 @@ export default function HistoryPage() {
       try {
         const token = await login();
         const raw = await getProjects(token);
-        backendProjects = raw.map((item: any) => {
+        backendProjects = raw.map((item: any): ProjectHistoryItem | null => {
           if (item.data && item.data.recommendation) {
             return {
               id: item._id || item.id || Date.now().toString(),
@@ -43,7 +43,7 @@ export default function HistoryPage() {
             };
           }
           return null;
-        }).filter(Boolean);
+        }).filter((p): p is ProjectHistoryItem => p !== null);
       } catch {
         // Backend unavailable — that's fine
       }
