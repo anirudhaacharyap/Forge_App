@@ -13,6 +13,7 @@ export const translations: TranslationDictionary = {
     "header.identify": "Identify",
     "header.vendors": "Vendors",
     "header.history": "History",
+    "header.chat": "Chat",
     
     "hero.title": "FORGE",
     "hero.tagline": "Precision engineering intelligence for high-stakes industrial operations.",
@@ -83,6 +84,7 @@ export const translations: TranslationDictionary = {
     "header.identify": "पहचानें (Identify)",
     "header.vendors": "विक्रेता (Vendors)",
     "header.history": "इतिहास (History)",
+    "header.chat": "चैट (Chat)",
     
     "hero.title": "FORGE",
     "hero.tagline": "उच्च-जोखिम वाले औद्योगिक कार्यों के लिए सटीक इंजीनियरिंग इंटेलिजेंस।",
@@ -153,6 +155,7 @@ export const translations: TranslationDictionary = {
     "header.identify": "ಗುರುತಿಸಿ (Identify)",
     "header.vendors": "ಮಾರಾಟಗಾರರು (Vendors)",
     "header.history": "ಇತಿಹಾಸ (History)",
+    "header.chat": "ಚಾಟ್ (Chat)",
 
     "hero.title": "FORGE",
     "hero.tagline": "ಹೆಚ್ಚಿನ-ಅಪಾಯದ ಕೈಗಾರಿಕಾ ಕಾರ್ಯಾಚರಣೆಗಳಿಗಾಗಿ ನಿಖರವಾದ ಎಂಜಿನಿಯರಿಂಗ್ ಬುದ್ಧಿಮತ್ತೆ.",
@@ -223,6 +226,7 @@ export const translations: TranslationDictionary = {
     "header.identify": "Identifier",
     "header.vendors": "Fournisseurs",
     "header.history": "Historique",
+    "header.chat": "Discussion",
 
     "hero.title": "FORGE",
     "hero.tagline": "Intelligence d'ingénierie de précision pour des opérations industrielles à enjeux élevés.",
@@ -293,6 +297,7 @@ export const translations: TranslationDictionary = {
     "header.identify": "Identificar",
     "header.vendors": "Proveedores",
     "header.history": "Historial",
+    "header.chat": "Chat",
 
     "hero.title": "FORGE",
     "hero.tagline": "Inteligencia de ingeniería de precisión para operaciones industriales de alto riesgo.",
