@@ -8,7 +8,8 @@ import json
 def test_intent_extraction_prompt_has_placeholders():
     """Verify the intent extraction prompt template has the expected placeholder."""
     from app.services.gemini_service import INTENT_EXTRACTION_PROMPT
-    assert "{user_input}" in INTENT_EXTRACTION_PROMPT
+    assert "{text}" in INTENT_EXTRACTION_PROMPT
+    assert "{language}" in INTENT_EXTRACTION_PROMPT
 
 
 def test_ranking_prompt_has_placeholders():
@@ -24,6 +25,8 @@ def test_explanation_prompt_has_placeholders():
     assert "{material_name}" in EXPLANATION_PROMPT
     assert "{use_case}" in EXPLANATION_PROMPT
     assert "{environment}" in EXPLANATION_PROMPT
+    assert "{category}" in EXPLANATION_PROMPT
+    assert "{language}" in EXPLANATION_PROMPT
 
 
 def test_photo_analysis_prompt_exists():
