@@ -214,17 +214,17 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center w-full">
               <span className="material-symbols-outlined text-[64px] text-[var(--color-forge-red)]/30 mb-4">
                 forum
               </span>
-              <h2 className="text-2xl font-bold text-[var(--color-text-heading)] mb-2">
+              <h2 className="text-2xl font-bold text-[var(--color-text-heading)] mb-2 w-full">
                 FORGE Chat
               </h2>
-              <p className="text-sm text-[var(--color-text-secondary)] max-w-md mb-8">
+              <p className="text-sm text-[var(--color-text-secondary)] max-w-md mx-auto mb-8">
                 Ask questions about materials, upload site photos for analysis, or check if your contractor is overcharging.
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg mx-auto">
                 {[
                   { icon: "receipt_long", text: "Is my contractor overcharging for TMT bars?" },
                   { icon: "photo_camera", text: "Drop a site photo to identify materials" },
