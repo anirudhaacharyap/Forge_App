@@ -179,6 +179,21 @@ export async function submitAnalysis(payload: AnalysisPayload): Promise<Analysis
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+
+  // Handle HTTP-level errors (502, 400, etc.) with descriptive backend messages
+  if (!res.ok) {
+    let errorMsg = `Server error (${res.status})`;
+    try {
+      const errBody = await res.json();
+      if (errBody.error) errorMsg = errBody.error;
+      else if (errBody.detail) errorMsg = errBody.detail;
+    } catch {
+      // Response wasn't JSON — use status text
+      errorMsg = `Server error: ${res.statusText || res.status}`;
+    }
+    throw new Error(errorMsg);
+  }
+
   const data = await res.json();
   if (!data.success) {
     throw new Error(data.error || "Analysis failed");
