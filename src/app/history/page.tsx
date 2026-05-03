@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { login, getProjects } from "@/lib/api";
 import type { AnalysisResponse } from "@/lib/api";
 
 interface ProjectHistoryItem {
@@ -18,16 +19,62 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("forge_saved_projects");
-      if (raw) {
-        setProjects(JSON.parse(raw));
+    async function loadHistory() {
+      let backendProjects: ProjectHistoryItem[] = [];
+      let localProjects: ProjectHistoryItem[] = [];
+
+      // 1. Try fetching from backend API
+      try {
+        const token = await login();
+        const raw = await getProjects(token);
+        backendProjects = raw.map((item: any) => {
+          if (item.data && item.data.recommendation) {
+            return {
+              id: item._id || item.id || Date.now().toString(),
+              created_at: item.created_at || new Date().toISOString(),
+              data: item.data,
+            };
+          }
+          if (item.recommendation) {
+            return {
+              id: item._id || Date.now().toString(),
+              created_at: item.created_at || new Date().toISOString(),
+              data: item,
+            };
+          }
+          return null;
+        }).filter(Boolean);
+      } catch {
+        // Backend unavailable — that's fine
       }
-    } catch (err) {
-      console.error("Failed to load history:", err);
-    } finally {
+
+      // 2. Load from localStorage
+      try {
+        const raw = localStorage.getItem("forge_saved_projects");
+        if (raw) {
+          localProjects = JSON.parse(raw);
+        }
+      } catch {
+        // localStorage unavailable
+      }
+
+      // 3. Merge: deduplicate by id, prefer backend entries
+      const seen = new Set<string>();
+      const merged: ProjectHistoryItem[] = [];
+      for (const p of [...backendProjects, ...localProjects]) {
+        if (!seen.has(p.id)) {
+          seen.add(p.id);
+          merged.push(p);
+        }
+      }
+
+      // Sort newest first
+      merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setProjects(merged);
       setLoading(false);
     }
+    loadHistory();
   }, []);
 
   const handleViewProject = (data: AnalysisResponse) => {
@@ -38,7 +85,14 @@ export default function HistoryPage() {
   const handleDeleteProject = (id: string) => {
     const updated = projects.filter((p) => p.id !== id);
     setProjects(updated);
-    localStorage.setItem("forge_saved_projects", JSON.stringify(updated));
+    // Also remove from localStorage
+    try {
+      const raw = localStorage.getItem("forge_saved_projects");
+      if (raw) {
+        const local = JSON.parse(raw).filter((p: ProjectHistoryItem) => p.id !== id);
+        localStorage.setItem("forge_saved_projects", JSON.stringify(local));
+      }
+    } catch { /* ignore */ }
   };
 
   return (

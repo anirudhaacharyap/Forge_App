@@ -150,6 +150,27 @@ export interface VendorSearchPayload {
   radius_km: number;
 }
 
+export interface VoiceTranscribePayload {
+  audio_base64: string;
+  language_code: "hi-IN" | "kn-IN" | "ta-IN" | "te-IN" | "ml-IN" | "en-IN";
+  audio_format: "wav" | "mp3";
+}
+
+export interface VoiceTranscribeResponse {
+  transcript: string;
+  ready_for_analysis: boolean;
+  confidence?: string;
+}
+
+export interface VoiceSynthesizePayload {
+  text: string;
+  language_code: "hi-IN" | "kn-IN" | "en-IN";
+}
+
+export interface VoiceSynthesizeResponse {
+  audio_base64: string;
+}
+
 /* ── API Functions ── */
 
 export async function submitAnalysis(payload: AnalysisPayload): Promise<AnalysisResponse> {
@@ -245,4 +266,28 @@ export async function getProjects(token: string): Promise<any[]> {
   }
   const data = await res.json();
   return Array.isArray(data) ? data : (data.projects || []);
+}
+
+export async function transcribeVoice(payload: VoiceTranscribePayload): Promise<VoiceTranscribeResponse> {
+  const res = await fetch(`${API_URL}/api/voice/transcribe`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error("Voice transcription failed");
+  }
+  return res.json();
+}
+
+export async function synthesizeVoice(payload: VoiceSynthesizePayload): Promise<VoiceSynthesizeResponse> {
+  const res = await fetch(`${API_URL}/api/voice/synthesize`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error("Voice synthesis failed");
+  }
+  return res.json();
 }

@@ -4,6 +4,10 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CameraCaptureModal from "./CameraCaptureModal";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { transcribeVoice } from "@/lib/api";
+
+// Languages that support Sarvam server-side transcription
+const SARVAM_LANGUAGES = ["hi-IN", "kn-IN", "ta-IN", "te-IN", "ml-IN", "en-IN"];
 
 export default function SimpleMode({
   onSubmit,
@@ -15,24 +19,33 @@ export default function SimpleMode({
   const [text, setText] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   // Voice State
   const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const [supported, setSupported] = useState(true);
 
+  // Check if we should use Sarvam (server-side) or browser SpeechRecognition
+  const useSarvam = SARVAM_LANGUAGES.includes(language) && language !== "en-IN";
+
   useEffect(() => {
-    const SpeechRecognition =
-      typeof window !== "undefined"
-        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-        : null;
-    if (!SpeechRecognition) {
-      setSupported(false);
+    if (useSarvam) {
+      // Sarvam uses MediaRecorder — check support
+      setSupported(!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+    } else {
+      const SpeechRecognition =
+        typeof window !== "undefined"
+          ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+          : null;
+      setSupported(!!SpeechRecognition);
     }
-  }, []);
+  }, [useSarvam]);
 
   const handleFile = (file: File) => {
     const reader = new FileReader();
@@ -43,7 +56,69 @@ export default function SimpleMode({
     reader.readAsDataURL(file);
   };
 
-  const startRecording = () => {
+  // ── Sarvam Server-Side Recording ──
+  const startSarvamRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+        
+        // Convert to base64
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64 = (reader.result as string).split(",")[1];
+          if (!base64 || base64.length < 1000) {
+            // Audio too short
+            setIsTranscribing(false);
+            return;
+          }
+
+          setIsTranscribing(true);
+          try {
+            const result = await transcribeVoice({
+              audio_base64: base64,
+              language_code: language as "hi-IN" | "kn-IN" | "ta-IN" | "te-IN" | "ml-IN" | "en-IN",
+              audio_format: "wav",
+            });
+            const initialText = text.trim() ? text.trim() + " " : "";
+            setText(initialText + result.transcript);
+          } catch (err) {
+            console.error("Sarvam transcription failed:", err);
+          } finally {
+            setIsTranscribing(false);
+          }
+        };
+        reader.readAsDataURL(audioBlob);
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Microphone access denied:", err);
+      alert("Microphone access is required for voice input.");
+    }
+  };
+
+  const stopSarvamRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  // ── Browser SpeechRecognition (English fallback) ──
+  const startBrowserRecording = () => {
     if (!supported) {
       alert("Voice input is not supported in this browser.");
       return;
@@ -51,11 +126,10 @@ export default function SimpleMode({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = "en-IN";
+    recognition.lang = language;
     recognition.interimResults = true;
     recognition.continuous = true;
 
-    // Capture text before recording starts to append properly
     const initialText = text.trim() ? text.trim() + " " : "";
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,9 +149,26 @@ export default function SimpleMode({
     setIsRecording(true);
   };
 
-  const stopRecording = () => {
+  const stopBrowserRecording = () => {
     recognitionRef.current?.stop();
     setIsRecording(false);
+  };
+
+  // ── Unified handlers ──
+  const startRecording = () => {
+    if (useSarvam) {
+      startSarvamRecording();
+    } else {
+      startBrowserRecording();
+    }
+  };
+
+  const stopRecording = () => {
+    if (useSarvam) {
+      stopSarvamRecording();
+    } else {
+      stopBrowserRecording();
+    }
   };
 
   const handleSendOrVoice = () => {
@@ -92,10 +183,12 @@ export default function SimpleMode({
     }
   };
 
-  // Determine right action button styles
   const getRightBtnStyle = () => {
     if (isRecording) {
       return "bg-[var(--color-error)] text-white scale-110 shadow-lg";
+    }
+    if (isTranscribing) {
+      return "bg-[var(--color-forge-accent)] text-white";
     }
     if (text.trim()) {
       return "bg-[var(--color-forge-accent)] text-white hover:bg-[var(--color-forge-accent-hover)] shadow-md";
@@ -123,7 +216,7 @@ export default function SimpleMode({
               ? "border-[var(--color-error)]"
               : "border-[var(--color-border-light)] focus:border-[var(--color-primary-container)]"
           }`}
-          placeholder={isRecording ? t("input.listening") : t("input.placeholder")}
+          placeholder={isRecording ? t("input.listening") : isTranscribing ? "Transcribing..." : t("input.placeholder")}
           id="simple-mode-input"
         />
         
@@ -160,25 +253,24 @@ export default function SimpleMode({
           id="simple-photo-upload"
         />
 
-
-
         {/* Right Action: Voice or Send */}
         <button
           onClick={handleSendOrVoice}
+          disabled={isTranscribing}
           className={`absolute right-4 bottom-4 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 active:scale-95 hover:scale-105 ${getRightBtnStyle()}`}
           aria-label={isRecording ? "Stop Recording" : text.trim() ? "Send" : "Voice Input"}
           title={isRecording ? "Stop Recording" : text.trim() ? "Send" : "Voice Input"}
         >
           <AnimatePresence mode="wait">
             <motion.span
-              key={isRecording ? "stop" : text.trim() ? "send" : "mic"}
+              key={isTranscribing ? "transcribing" : isRecording ? "stop" : text.trim() ? "send" : "mic"}
               initial={{ opacity: 0, rotate: -90, scale: 0.5 }}
               animate={{ opacity: 1, rotate: 0, scale: 1 }}
               exit={{ opacity: 0, rotate: 90, scale: 0.5 }}
               transition={{ duration: 0.2 }}
               className="material-symbols-outlined text-xl absolute"
             >
-              {isRecording ? "stop" : text.trim() ? "arrow_upward" : "mic"}
+              {isTranscribing ? "hourglass_empty" : isRecording ? "stop" : text.trim() ? "arrow_upward" : "mic"}
             </motion.span>
           </AnimatePresence>
         </button>
