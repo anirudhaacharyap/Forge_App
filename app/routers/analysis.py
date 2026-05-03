@@ -22,6 +22,7 @@ from app.services.gemini_service import gemini_service
 from app.services.sarvam_service import sarvam_service
 from app.services.materials_service import materials_service
 from app.services.vendor_service import vendor_service
+from app.services.translation_service import translation_service
 from app.data.standards_map import get_standards
 from app.services.failure_service import failure_service
 from app.data.failure_map import get_failure_modes_dict
@@ -200,7 +201,10 @@ async def full_analysis(
             intent["conflict_check"] = {"has_conflicts": True, "conflicts": detected_conflicts}
     else:
         try:
-            intent = await gemini_service.extract_intent(body.text)
+            # Step 1: Extract intent & Detect conflicts
+            intent = await gemini_service.extract_intent(
+                text=body.text, language=body.language.value
+            )
         except GeminiException as e:
             raise InvalidInputException(f"Could not understand input: {e.message}")
 
@@ -226,15 +230,13 @@ async def full_analysis(
     use_case = intent.get("use_case", "general construction")
 
     # --- Step 4: Generate explanation and estimate missing properties ---
-    db_props = primary.get("properties", {})
-    known_props = {k: v for k, v in db_props.items() if v is not None}
-    
     explanation_data = await gemini_service.generate_explanation(
         material_name=primary["name"],
         category=primary.get("category", "Unknown"),
-        use_case=use_case,
         environment=environment,
-        known_properties=known_props
+        use_case=use_case,
+        known_properties=primary.get("properties", {}),
+        language=body.language.value,
     )
     explanation = explanation_data.get("explanation", f"{primary['name']} is a suitable choice.")
     estimated_props = explanation_data.get("properties", {})
@@ -244,13 +246,19 @@ async def full_analysis(
     standards_result = StandardsResult(
         passed=all(s["status"] == "PASS" for s in raw_standards),
         standards_checked=[s["standard"] for s in raw_standards],
-        details=[StandardResult(**s) for s in raw_standards],
+        details=[
+            StandardResult(
+                standard=s["standard"],
+                status=s["status"],
+                note=translation_service.translate(s["note"], body.language.value)
+            ) for s in raw_standards
+        ],
     )
 
     # --- Step 6: Failure analysis ---
     conflict_data = intent.get("conflict_check", {})
     raw_failure = failure_service.analyze_failures(
-        primary["name"], environment, conflict_data
+        primary["name"], environment, conflict_data, language=body.language.value
     )
     failure_result = FailureResult(
         risk_level=raw_failure["risk_level"],
@@ -286,10 +294,10 @@ async def full_analysis(
     conflict_warning = ConflictWarning(
         detected=conflict_data.get("has_conflicts", False),
         conflicts=conflict_data.get("conflicts", []),
-        resolution=(
-            "The recommendation below represents the best available tradeoff for your requirements."
-            if conflict_data.get("has_conflicts") else None
-        ),
+        resolution=translation_service.translate(
+            "The recommendation below represents the best available tradeoff for your requirements.",
+            body.language.value
+        ) if conflict_data.get("has_conflicts") else None,
     )
 
     # --- Step 10: TTS (non-fatal) ---

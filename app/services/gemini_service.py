@@ -57,13 +57,13 @@ Required output format:
   }},
   "conflict_check": {{
     "has_conflicts": true | false,
-    "conflicts": ["describe each conflicting pair if any"],
+    "conflicts": ["List of conflict descriptions in {language}"],
     "suggested_risk_level": "LOW | MEDIUM | HIGH",
-    "severe_failure_modes": ["list severe failures if conflicts exist"]
+    "severe_failure_modes": ["List of severe failure modes in {language} if risk is HIGH"]
   }}
 }}
 
-User input: {user_input}
+User input: {text}
 """
 
 RANKING_PROMPT = """
@@ -82,11 +82,14 @@ Return format: ["first_choice", "second_choice", "third_choice"]
 """
 
 EXPLANATION_PROMPT = """
-You are a senior construction materials expert explaining a recommendation to a {experience_level} user.
+You are a material science expert. Provide a detailed justification for using {material_name} ({category}) in a {environment} environment for {use_case}.
 
-Analyze the material: {material_name} (Category: {category}) for the use case: {use_case} in {environment} conditions.
+LANGUAGE INSTRUCTION:
+You MUST respond entirely in {language}. 
+All sentences, descriptions, and justifications must be in {language} script and grammar.
+HOWEVER, keep technical material names (like "316 Stainless Steel") in ENGLISH.
 
-KNOWN PROPERTIES (Use these as ground truth, do not contradict them):
+KNOWN PROPERTIES (Ground Truth):
 {known_properties}
 
 CRITICAL SAFETY INSTRUCTION: If this material is inherently unsuitable or dangerous for the specified use case (e.g., using wood for high-rise structural foundations or glass for armor), your explanation MUST start with a clear, bold warning about the physical impossibilities and high risk involved.
@@ -163,6 +166,9 @@ class GeminiService:
     """
 
     MODEL = "gemini-3-flash-preview"
+    CONFIG = types.GenerateContentConfig(
+        response_mime_type="application/json"
+    )
 
     def __init__(self):
         settings = get_settings()
@@ -170,13 +176,14 @@ class GeminiService:
 
     # ---- NLP: intent extraction ----
 
-    async def extract_intent(self, user_input: str) -> dict:
-        """Extract structured intent from natural language user input."""
+    async def extract_intent(self, text: str, language: str = "English") -> dict:
+        """Extract user intent and detect conflicts in the target language."""
         try:
-            prompt = INTENT_EXTRACTION_PROMPT.format(user_input=user_input)
+            prompt = INTENT_EXTRACTION_PROMPT.format(text=text, language=language)
             response = await self.client.aio.models.generate_content(
-                model=self.MODEL,
-                contents=prompt,
+                model=self.MODEL, 
+                contents=prompt, 
+                config=self.CONFIG
             )
             return _parse_json_response(response.text)
         except json.JSONDecodeError as e:
@@ -261,21 +268,21 @@ class GeminiService:
     async def generate_explanation(
         self,
         material_name: str,
-        use_case: str,
+        category: str,
         environment: str,
-        category: str = "Unknown",
-        known_properties: dict = None,
-        experience_level: str = "professional",
+        use_case: str,
+        known_properties: dict,
+        language: str = "English",
     ) -> dict:
-        """Generate a human-readable explanation and estimate properties for a material recommendation."""
+        """Generate a detailed explanation and property estimation in the target language."""
         try:
             prompt = EXPLANATION_PROMPT.format(
                 material_name=material_name,
                 category=category,
-                use_case=use_case,
                 environment=environment,
+                use_case=use_case,
                 known_properties=json.dumps(known_properties or {}, indent=2),
-                experience_level=experience_level,
+                language=language,
             )
             response = await self.client.aio.models.generate_content(
                 model=self.MODEL,
