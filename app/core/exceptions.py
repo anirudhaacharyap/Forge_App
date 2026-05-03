@@ -84,3 +84,13 @@ class ConflictingRequirementsException(ForgeBaseException):
         super().__init__(
             f"Conflicting requirements detected: {', '.join(conflicts)}", 200
         )
+
+
+class SarvamSTTException(ForgeBaseException):
+    def __init__(self, detail: str):
+        super().__init__(f"Sarvam STT error: {detail}", 502)
+
+
+class SarvamTTSException(ForgeBaseException):
+    def __init__(self, detail: str):
+        super().__init__(f"Sarvam TTS error: {detail}", 502)

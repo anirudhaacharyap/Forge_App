@@ -19,7 +19,7 @@ from app.models.responses import (
 )
 from app.db.mongo import get_db
 from app.services.gemini_service import gemini_service
-from app.services.bulbul_service import bulbul_service
+from app.services.sarvam_service import sarvam_service
 from app.services.materials_service import materials_service
 from app.services.vendor_service import vendor_service
 from app.data.standards_map import get_standards
@@ -295,11 +295,15 @@ async def full_analysis(
     # --- Step 10: TTS (non-fatal) ---
     tts_audio = None
     try:
-        tts_text = bulbul_service.build_summary(
-            material_name=primary["name"], explanation=explanation,
-            risk_level=raw_failure["risk_level"], language=body.language.value,
+        tts_text = sarvam_service.build_tts_summary(
+            material_name=primary["name"],
+            explanation=explanation,
+            risk_level=raw_failure["risk_level"],
+            language_code=body.language.value,
         )
-        tts_audio = await bulbul_service.synthesize(tts_text, body.language.value)
+        tts_audio = await sarvam_service.synthesize(
+            text=tts_text, language_code=body.language.value
+        )
     except Exception as e:
         logger.warning(f"TTS generation failed, continuing without audio: {e}")
 

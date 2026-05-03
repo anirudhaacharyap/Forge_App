@@ -100,3 +100,19 @@ class FullAnalysisResponse(BaseModel):
     tts_audio_base64: str | None = None
     tts_language: str | None = None
     report_available: bool = True
+
+
+class VoiceTranscribeResponse(BaseModel):
+    transcript: str
+    language_code: str
+    confidence: str
+    word_count: int
+    ready_for_analysis: bool
+
+
+class TTSSynthesizeResponse(BaseModel):
+    audio_base64: str | None
+    language_code: str
+    character_count: int
+    success: bool
+    message: str | None = None

@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, patch
 async def test_full_analysis_text_input_success(client, mock_gemini, mock_db):
     with patch("app.routers.analysis.get_db", return_value=mock_db):
         with patch("app.routers.analysis.vendor_service.search_vendors", new_callable=AsyncMock, return_value=[]):
-            with patch("app.routers.analysis.bulbul_service.synthesize", new_callable=AsyncMock, return_value="base64audio"):
+            with patch("app.routers.analysis.sarvam_service.synthesize", new_callable=AsyncMock, return_value="base64audio"):
                 response = await client.post("/api/full-analysis", json={
                     "input_type": "text",
                     "text": "I need a metal gate for a coastal area",
@@ -39,7 +39,7 @@ async def test_full_analysis_missing_text_raises_422(client):
 async def test_full_analysis_advanced_mode(client, mock_gemini, mock_db):
     with patch("app.routers.analysis.get_db", return_value=mock_db):
         with patch("app.routers.analysis.vendor_service.search_vendors", new_callable=AsyncMock, return_value=[]):
-            with patch("app.routers.analysis.bulbul_service.synthesize", new_callable=AsyncMock, return_value=None):
+            with patch("app.routers.analysis.sarvam_service.synthesize", new_callable=AsyncMock, return_value=None):
                 response = await client.post("/api/full-analysis", json={
                     "input_type": "advanced",
                     "advanced_params": {
@@ -57,7 +57,7 @@ async def test_full_analysis_advanced_mode(client, mock_gemini, mock_db):
 async def test_conflict_detection_in_advanced_mode(client, mock_gemini, mock_db):
     with patch("app.routers.analysis.get_db", return_value=mock_db):
         with patch("app.routers.analysis.vendor_service.search_vendors", new_callable=AsyncMock, return_value=[]):
-            with patch("app.routers.analysis.bulbul_service.synthesize", new_callable=AsyncMock, return_value=None):
+            with patch("app.routers.analysis.sarvam_service.synthesize", new_callable=AsyncMock, return_value=None):
                 response = await client.post("/api/full-analysis", json={
                     "input_type": "advanced",
                     "advanced_params": {
@@ -78,7 +78,7 @@ async def test_conflict_detection_in_advanced_mode(client, mock_gemini, mock_db)
 async def test_tts_failure_does_not_break_response(client, mock_gemini, mock_db):
     with patch("app.routers.analysis.get_db", return_value=mock_db):
         with patch("app.routers.analysis.vendor_service.search_vendors", new_callable=AsyncMock, return_value=[]):
-            with patch("app.routers.analysis.bulbul_service.synthesize", side_effect=Exception("TTS failed")):
+            with patch("app.routers.analysis.sarvam_service.synthesize", side_effect=Exception("TTS failed")):
                 response = await client.post("/api/full-analysis", json={
                     "input_type": "text",
                     "text": "I need material for an outdoor gate",
@@ -93,7 +93,7 @@ async def test_tts_failure_does_not_break_response(client, mock_gemini, mock_db)
 async def test_vendor_failure_does_not_break_response(client, mock_gemini, mock_db):
     with patch("app.routers.analysis.get_db", return_value=mock_db):
         with patch("app.routers.analysis.vendor_service.search_vendors", side_effect=Exception("Maps API down")):
-            with patch("app.routers.analysis.bulbul_service.synthesize", new_callable=AsyncMock, return_value=None):
+            with patch("app.routers.analysis.sarvam_service.synthesize", new_callable=AsyncMock, return_value=None):
                 response = await client.post("/api/full-analysis", json={
                     "input_type": "text",
                     "text": "I need material for a wall",

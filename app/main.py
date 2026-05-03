@@ -11,7 +11,7 @@ from app.db.mongo import connect_db, disconnect_db
 from app.core.error_handlers import register_exception_handlers
 from app.core.logging import setup_logging
 from app.core.limiter import limiter
-from app.routers import analysis, materials, vendors, report, health, auth, projects
+from app.routers import analysis, materials, vendors, report, health, auth, projects, voice
 
 
 @asynccontextmanager
@@ -60,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(report.router, prefix="/api", tags=["report"])
     app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
     app.include_router(projects.router, prefix="/api/projects", tags=["projects"])
+    app.include_router(voice.router, prefix="/api", tags=["voice"])
 
     return app
 

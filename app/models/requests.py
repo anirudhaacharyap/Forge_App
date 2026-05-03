@@ -97,3 +97,33 @@ class ReportRequest(BaseModel):
     cost: dict = {}
     vendors: dict = {}
     conflict_warning: dict = {}
+
+
+class VoiceTranscribeRequest(BaseModel):
+    audio_base64: str = Field(..., description="Base64 encoded audio file")
+    language_code: str = Field(
+        "hi-IN",
+        description="Language of the audio",
+        pattern="^(hi-IN|kn-IN|ta-IN|te-IN|ml-IN|en-IN)$",
+    )
+    audio_format: str = Field(
+        "wav", description="Audio format", pattern="^(wav|mp3)$"
+    )
+
+    @field_validator("audio_base64")
+    @classmethod
+    def validate_base64(cls, v):
+        try:
+            import base64
+
+            decoded = base64.b64decode(v)
+            if len(decoded) < 1000:
+                raise ValueError("Audio too short — minimum 1KB")
+            return v
+        except Exception as e:
+            raise ValueError(f"Invalid base64 audio: {str(e)}")
+
+
+class TTSSynthesizeRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=500)
+    language_code: str = Field("en-IN", pattern="^(en-IN|hi-IN|kn-IN)$")
