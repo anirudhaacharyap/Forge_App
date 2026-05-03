@@ -107,40 +107,60 @@ export default function SimpleMode({
         setIsTranscribing(true);
 
         try {
-          // Decode the webm audio to raw PCM, then re-encode as real WAV
-          const webmBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-          const arrayBuffer = await webmBlob.arrayBuffer();
-          const audioCtx = new AudioContext();
-          const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-          const pcmData = audioBuffer.getChannelData(0); // mono
-          const wavBlob = encodeWav(pcmData, audioBuffer.sampleRate);
-          await audioCtx.close();
+          let base64Audio: string;
+          let audioFormat: "wav" | "mp3" = "wav";
 
-          // Convert WAV blob to base64
-          const base64 = await new Promise<string>((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
-            reader.readAsDataURL(wavBlob);
-          });
+          // Try WAV conversion via AudioContext
+          try {
+            const webmBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+            const arrayBuffer = await webmBlob.arrayBuffer();
+            const audioCtx = new AudioContext();
+            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            const pcmData = audioBuffer.getChannelData(0);
+            const wavBlob = encodeWav(pcmData, audioBuffer.sampleRate);
+            await audioCtx.close();
 
-          if (!base64 || base64.length < 500) {
+            base64Audio = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
+              reader.readAsDataURL(wavBlob);
+            });
+            audioFormat = "wav";
+          } catch (convErr) {
+            console.warn("WAV conversion failed, sending raw audio:", convErr);
+            // Fallback: send raw recorded data as-is
+            const rawBlob = new Blob(audioChunksRef.current);
+            base64Audio = await new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve((reader.result as string).split(",")[1]);
+              reader.readAsDataURL(rawBlob);
+            });
+            audioFormat = "wav"; // backend may still handle it
+          }
+
+          if (!base64Audio || base64Audio.length < 500) {
+            setText("⚠️ Recording too short. Please try again and speak for at least 2 seconds.");
             setIsTranscribing(false);
             return;
           }
 
           const result = await transcribeVoice({
-            audio_base64: base64,
+            audio_base64: base64Audio,
             language_code: language as "hi-IN" | "kn-IN" | "ta-IN" | "te-IN" | "ml-IN" | "en-IN",
-            audio_format: "wav",
+            audio_format: audioFormat,
           });
 
-          if (result.transcript) {
+          const transcript = result.transcript || "";
+          if (transcript.trim()) {
             const currentText = textRef.current;
             const initialText = currentText.trim() ? currentText.trim() + " " : "";
-            setText(initialText + result.transcript);
+            setText(initialText + transcript);
+          } else {
+            setText("⚠️ Could not understand the audio. Please speak clearly and try again.");
           }
         } catch (err) {
           console.error("Sarvam transcription failed:", err);
+          setText("⚠️ Transcription failed. Please try again or type your query instead.");
         } finally {
           setIsTranscribing(false);
         }
