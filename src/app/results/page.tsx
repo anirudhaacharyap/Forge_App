@@ -18,7 +18,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function ResultsPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [data, setData] = useState<AnalysisResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -123,7 +123,11 @@ export default function ResultsPage() {
             {saved ? "Saved" : saving ? "Saving..." : "Save Project"}
           </button>
           <PDFDownload analysisData={data} />
-          <AudioPlayback base64Audio={data.tts_audio_base64} />
+          <AudioPlayback
+            base64Audio={data.tts_audio_base64}
+            summaryText={data.recommendation.explanation}
+            languageCode={data.tts_language || language}
+          />
         </div>
       </div>
 
