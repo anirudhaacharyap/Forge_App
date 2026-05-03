@@ -171,30 +171,6 @@ export interface VoiceSynthesizeResponse {
   audio_base64: string;
 }
 
-export interface MultimodalChatPayload {
-  image_base64?: string;
-  text: string;
-  response_mode: "CHAT" | "BREAKDOWN";
-  language: "hi-IN" | "kn-IN" | "en-IN";
-}
-
-export interface MultimodalChatResponse {
-  success: boolean;
-  chat_text?: string;
-  // BREAKDOWN mode returns the full analysis
-  recommendation?: Recommendation;
-  alternatives?: Alternative[];
-  standards?: Standards;
-  failure?: Failure;
-  cost?: Cost;
-  vendors?: Vendors;
-  conflict_warning?: ConflictWarning;
-  tts_audio_base64?: string | null;
-  tts_language?: string;
-  report_available?: boolean;
-  error?: string;
-}
-
 /* ── API Functions ── */
 
 export async function submitAnalysis(payload: AnalysisPayload): Promise<AnalysisResponse> {
@@ -327,26 +303,6 @@ export async function synthesizeVoice(payload: VoiceSynthesizePayload): Promise<
   });
   if (!res.ok) {
     throw new Error("Voice synthesis failed");
-  }
-  return res.json();
-}
-
-export async function chatMultimodal(payload: MultimodalChatPayload): Promise<MultimodalChatResponse> {
-  const res = await fetch(`${API_URL}/api/chat/multimodal`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    let errorMsg = `Chat failed (${res.status})`;
-    try {
-      const errBody = await res.json();
-      if (errBody.error) errorMsg = errBody.error;
-      else if (errBody.detail) errorMsg = errBody.detail;
-    } catch {
-      errorMsg = `Chat error: ${res.statusText || res.status}`;
-    }
-    throw new Error(errorMsg);
   }
   return res.json();
 }
