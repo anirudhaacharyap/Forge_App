@@ -26,7 +26,7 @@ class SarvamService:
         audio_format: str = "wav",
     ) -> dict:
         """
-        Convert base64 encoded audio to text transcript using Sarvam Saarika v2.
+        Convert base64 encoded audio to text transcript using Sarvam Saarika v2.5.
         """
         try:
             # 1. Decode base64
